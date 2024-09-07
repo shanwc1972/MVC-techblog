@@ -1,8 +1,13 @@
-<h1>Tech Blog</h1>
-{{#each posts}}
-  <div class="post">
-    <h2><a href="/post/{{this.id}}">{{this.title}}</a></h2>
-    <p>By {{this.User.username}}</p>
-    <p>{{this.content}}</p>
+{{#each posts as |post| }}
+  <div class="post-container">
+    <h2>
+        <div>
+            <a href="/post/{{post.id}}">{{post.title}}</a>
+        </div>
+        <div class="post-meta">
+            Posted By {{post.User.username}}
+        </div>
+    </h2>
+    <p>{{post.content}}</p>
   </div>
 {{/each}}
