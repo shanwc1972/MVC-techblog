@@ -18,7 +18,6 @@ router.get('/', async (req, res) => {
 
     // Serialize data so the template can read it
     const posts = postData.map((post) => post.get({ plain: true }));
-    console.log(posts);
 
     res.render('home', { posts });
   } catch (err) {
@@ -113,6 +112,22 @@ router.get('/postedit/:id', withAuth, async (req, res) => {
         } catch (err) {
           res.status(500).json(err);
         }
+});
+
+router.post('/comments', withAuth, async (req, res) => {
+  //Add a comment for a post
+  console.log(req.body.content);
+  try {
+    const newComment = await Comment.create({
+      content: req.body.content,
+      postId: req.body.postId,
+      userId: req.session.user_id,
+    });
+
+    res.status(200).json(newComment);
+  } catch (err) {
+    res.status(500).json(err);
+  }
 });
 
 module.exports = router;
