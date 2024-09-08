@@ -5,7 +5,7 @@
             <a href="/post/{{post.id}}">{{post.title}}</a>
         </div>
         <div class="post-meta">
-            Posted By {{post.User.username}}
+            Posted By {{post.User.username}} on {{format_date post.createdAt}}
         </div>
     </h2>
     <p>{{post.content}}</p>

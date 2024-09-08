@@ -3,6 +3,7 @@ const router = express.Router();
 const { Post, User } = require('../models');
 const withAuth = require('../utils/auth');
 
+
 // Home page route - List all posts
 router.get('/', async (req, res) => {
   try {
@@ -17,6 +18,7 @@ router.get('/', async (req, res) => {
 
     // Serialize data so the template can read it
     const posts = postData.map((post) => post.get({ plain: true }));
+    console.log(posts);
 
     res.render('home', { posts });
   } catch (err) {
@@ -24,18 +26,27 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Single post route
+// Get a single post route
 router.get('/post/:id', async (req, res) => {
   try {
-    const post = await Post.findByPk(req.params.id, { include: User });
-    if (!post) {
-      res.status(404).json({ message: 'No post found with this id' });
-      return;
-    }
-    res.render('post', { post });
-  } catch (err) {
-    res.status(500).json(err);
-  }
+    const postData = await Post.findByPk(req.params.id, {
+         include: [
+            {
+                model: User,
+                attributes: ['username'],
+            },
+        ],
+    });
+
+    const post = postData.get({ plain: true});
+
+    res.render('post', {
+        ...post,
+        logged_in: req.session.logged_in
+      });
+    } catch (err) {
+      res.status(500).json(err);
+    } 
 });
 
 router.get('/login', (req, res) => {
@@ -60,8 +71,8 @@ router.get('/logout', (req, res) => {
     res.render('home');
 })
 
-  // Use withAuth middleware to prevent access to route
 router.get('/dashboard', withAuth, async (req, res) => {
+    //Render the dashboard when the user logs on
     try {
       // Find the logged in user based on the session ID
       const userData = await User.findByPk(req.session.user_id, {
@@ -70,6 +81,7 @@ router.get('/dashboard', withAuth, async (req, res) => {
       });
   
       const user = userData.get({ plain: true });
+      console.log(user);
   
       res.render('dashboard', {
         ...user,
@@ -78,6 +90,29 @@ router.get('/dashboard', withAuth, async (req, res) => {
     } catch (err) {
       res.status(500).json(err);
     }
-  });
+});
+
+router.get('/postedit/:id', withAuth, async (req, res) => {
+    // render a post edit form when the post is clicked within the dashboard
+    try {
+        const postData = await Post.findByPk(req.params.id, {
+             include: [
+                {
+                    model: User,
+                    attributes: ['username'],
+                },
+            ],
+        });
+    
+        const post = postData.get({ plain: true});
+    
+        res.render('postedit', {
+            ...post,
+            logged_in: req.session.logged_in
+          });
+        } catch (err) {
+          res.status(500).json(err);
+        }
+});
 
 module.exports = router;
