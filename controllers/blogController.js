@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Post, User } = require('../models');
+const { Post, User, Comment } = require('../models');
 const withAuth = require('../utils/auth');
 
 
@@ -31,13 +31,22 @@ router.get('/post/:id', async (req, res) => {
     const postData = await Post.findByPk(req.params.id, {
          include: [
             {
+              model: User,
+              attributes: ['username'],
+            },
+            {
+              model: Comment,
+              include: [{
                 model: User,
-                attributes: ['username'],
+                attributes: ['username']
+              }],
+              attributes: ['content', 'createdAt']
             },
         ],
     });
 
     const post = postData.get({ plain: true});
+    console.log(post);
 
     res.render('post', {
         ...post,
@@ -116,7 +125,6 @@ router.get('/postedit/:id', withAuth, async (req, res) => {
 
 router.post('/comments', withAuth, async (req, res) => {
   //Add a comment for a post
-  console.log(req.body.content);
   try {
     const newComment = await Comment.create({
       content: req.body.content,
@@ -125,8 +133,10 @@ router.post('/comments', withAuth, async (req, res) => {
     });
 
     res.status(200).json(newComment);
+
   } catch (err) {
-    res.status(500).json(err);
+    console.error('Error creating comment:', err.message, err.stack);
+    res.status(500).json({ error: err.message });
   }
 });
 
