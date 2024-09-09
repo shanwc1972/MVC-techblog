@@ -4,7 +4,7 @@ const commentFormHandler = async (event) => {
     const content = document.querySelector('#new-comment').value.trim();
     const postId = document.querySelector('#postid').value.trim();
   
-    if (content && postid) {
+    if (content && postId) {
         const JSONBody = JSON.stringify({ content, postId });
         const response = await fetch(`/comments`, {
         method: 'POST',
@@ -14,11 +14,12 @@ const commentFormHandler = async (event) => {
   
       if (response.ok) {
         document.location.reload();
+      } else if (response.status === 401) {
+        document.location.replace('/login');
       } else {
         alert(response.statusText);
       }
     }
-    //alert('This function is not fully implemented at this time');
   };
 
 document
